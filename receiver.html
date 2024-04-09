@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebRTC Video Receiver</title>
+</head>
+<body>
+  <h1>WebRTC Video Receiver</h1>
+  <p><video id="remoteVideo" autoplay></video></p>
+  <p>Message</p>
+  <p><textarea id="message"></textarea></p>
+  <p><button id="apply-message">Apply</button></p>
+  <p>Answer</p>
+  <p><textarea id="answer"></textarea></p>
+
+  <script>
+
+class WebRTCReceiver
+{
+  constructor ()
+  {
+    document .getElementById ("apply-message") .addEventListener ("click", () => this .receiveMessage ());
+
+    this .setup ();
+  }
+
+  async setup ()
+  {
+    this .remoteVideo = document .getElementById ("remoteVideo");
+
+    const configuration = {
+      iceServers: [{ urls: "stun:stun.l.google.com:19302" }] // STUN server
+    };
+
+    this .peerConnection = new RTCPeerConnection (configuration);
+
+    this .peerConnection .ontrack = event => this .ontrack (event);
+  }
+
+  async receiveMessage ()
+  {
+    console .log ("receiveMessage");
+
+    const message = JSON .parse (document .getElementById ("message") .value);
+
+    await this .peerConnection .setRemoteDescription (message .offer);
+
+    for (const candidate of message .iceCandidates)
+      await this .peerConnection .addIceCandidate (candidate);
+
+    const answer = await this .peerConnection .createAnswer ();
+
+    this .peerConnection .setLocalDescription (answer);
+
+    document .getElementById ("answer") .value = JSON .stringify (answer);
+  }
+
+  ontrack (event)
+  {
+    console .log ("ontrack");
+
+    this .remoteVideo .srcObject = event .streams [0];
+  }
+}
+
+const receiver = new WebRTCReceiver ();
+
+  </script>
+</body>
+</html>
