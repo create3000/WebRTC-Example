@@ -51,7 +51,7 @@ class WebRTCReceiver
 
     const answer = await this .peerConnection .createAnswer ();
 
-    this .peerConnection .setLocalDescription (answer);
+    await this .peerConnection .setLocalDescription (answer);
 
     document .getElementById ("answer") .value = JSON .stringify (answer);
   }
